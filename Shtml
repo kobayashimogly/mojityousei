@@ -1,0 +1,118 @@
+<body>
+    <img class="lptop" src="https://s3-ap-northeast-1.amazonaws.com/digmedia/media/2025/03/mojityouse_logo.webp"
+        alt="eslptop">
+    <div class="contents">
+        <div id="topic">希望する文字数</div>
+        <label class="select mt-1">
+            <select>
+                <option value="">選択してください</option>
+                <option value="100">100字</option>
+                <option value="200">200字</option>
+                <option value="300">300字</option>
+                <option value="400">400字</option>
+                <option value="600">600字</option>
+                <option value="800">800字</option>
+            </select>
+        </label>
+        <div class="topic air">あなたのES内容</div>
+        <textarea></textarea>
+        <button class="button-4" id="generateButton">調整する</button>
+        <div id="result"></div>
+    </div>
+</body>
+
+<script type="importmap">
+    {
+        "imports": {
+            "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+    }
+</script>
+<script type="module">
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    const apiKey = 'AIzaSyCSe84z5ial7lmEU_dQNJ4Oswd4gkqrxhs';
+    const genAI = new GoogleGenerativeAI(apiKey);
+
+    async function generate() {
+        const button = document.getElementById('generateButton');
+        const resultDiv = document.getElementById('result');
+
+        // ボタン状態を変更
+        button.textContent = '現在調整中です...';
+        button.disabled = true;
+        resultDiv.style.display = 'none';
+
+        const count = parseInt(document.querySelector('select').value);
+        const koba = document.querySelector('textarea').value;
+
+        if (!count || !koba) {
+            alert("すべての入力欄を埋めてください。");
+            button.textContent = 'ESを調整する';
+            button.disabled = false;
+            return;
+        }
+
+        let generatedText = "";
+        let attempt = 0;
+        const maxAttempts = 5; // 最大試行回数
+        const minLength = Math.floor(count * 0.8);
+        const maxLength = Math.ceil(count * 1.0);
+
+        while (attempt < maxAttempts) {
+            attempt++;
+
+            const Template = `
+        指定文字数：${count}
+        入力されたES内容：${koba}
+この入力された内容を指定の文字数に調整して出力してください。
+
+#出力のルール
+- 指定文字数に対して **${minLength}〜${maxLength}字** にしてください。
+- 太文字や「*」など使わないでください。
+- コメントや補足説明は不要、本文のみ出力してください。
+`;
+
+            try {
+                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+                // 生成リクエストを送信
+                const result = await model.generateContent(Template);
+
+                if (result && result.response) {
+                    generatedText = result.response.text().trim();
+                } else {
+                    console.error('Error generating text:', result);
+                    resultDiv.textContent = '調整中にエラーが発生しました。';
+                    break;
+                }
+
+                // 文字数チェック
+                const length = generatedText.length;
+                if (length >= minLength && length <= maxLength) {
+                    resultDiv.textContent = generatedText;
+                    break;
+                }
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultDiv.textContent = '調整中にエラーが発生しました。';
+                break;
+            }
+        }
+
+        if (attempt === maxAttempts && (generatedText.length < minLength || generatedText.length > maxLength)) {
+            resultDiv.innerHTML = '指定文字数での調整に失敗しました。<br>元の文章が短すぎる、または長すぎる可能性があります。<br>内容をご確認の上、もう一度お試しください。';
+        } else {
+            resultDiv.textContent = generatedText;
+        }
+
+        // ボタン状態を元に戻す
+        resultDiv.style.display = 'block';
+        button.textContent = '調整する';
+        button.disabled = false;
+        window.location.href = "#result";
+    }
+
+    document.getElementById('generateButton').addEventListener('click', generate);
+</script>
