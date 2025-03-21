@@ -1,0 +1,65 @@
+<body>
+    <header>
+        <img class="logoa"
+            src="https://s3.ap-northeast-1.amazonaws.com/rea.media.assets/digmedia/Digmedia_logo_(1).png">
+    </header>
+    <img src="https://s3-ap-northeast-1.amazonaws.com/shukatsu-venture/media/2025/03/mojityouse_pc.webp"
+        class="topimg pc">
+    <img src="https://s3-ap-northeast-1.amazonaws.com/shukatsu-venture/media/2025/03/mojityouse_sp.webp"
+        class="topimg sp">
+    <div class="button_solid012" onclick="displayForm()">
+        START<i class="fas fa-angle-right fa-position-right"></i>
+    </div>
+    <img src="https://s3-ap-northeast-1.amazonaws.com/shukatsu-venture/media/2025/03/es文字数オススメ.webp" class="recimg">
+</body>
+<script>
+function displayForm() {
+    var modal = document.getElementById("event-form");
+    modal.classList.add("modal");
+    modal.style.display = "block";
+}
+function closeForm() {
+    var modal = document.getElementById("event-form");
+    modal.style.display = "none";
+}
+window.onclick = function(event) {
+    var modal = document.getElementById("event-form");
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+// URLのハッシュフラグメントを監視する関数
+function handleHashChange() {
+    const eventForm = document.getElementById("event-form");
+    
+    if (eventForm) {
+        // URLに#event-formが含まれているかチェック
+        if (window.location.hash === '#event-form') {
+            eventForm.classList.add("modal");
+            eventForm.style.display = "block";
+        } else {
+            eventForm.style.display = "none";
+        }
+    }
+}
+
+window.addEventListener('load', handleHashChange);
+
+window.addEventListener('hashchange', handleHashChange);
+
+function closeForm() {
+    const eventForm = document.getElementById("event-form");
+    if (eventForm) {
+        eventForm.style.display = "none";
+        history.pushState("", document.title, window.location.pathname + window.location.search);
+    }
+}
+
+window.addEventListener('click', function(event) {
+    const eventForm = document.getElementById("event-form");
+    if (event.target == eventForm) {
+        closeForm();
+    }
+});
+</script>
